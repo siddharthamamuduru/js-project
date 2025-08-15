@@ -79,6 +79,10 @@ header {
     /* margin: 10px 0; */
     margin-top: -10px;
 }
+.logo-container img {
+    height:10vh;
+    width:10vh;
+}
 .logo {
     height: 40px;
 }
