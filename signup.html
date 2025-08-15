@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>H&M Clone SignUp</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      padding: 0;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      background: linear-gradient(135deg, #141E30, #243B55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .container {
+      width: 320px;
+      padding: 30px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(15px);
+      box-shadow: 0 0 20px rgba(255,255,255,0.1), 0 0 30px rgba(0,0,0,0.2);
+      text-align: center;
+      color: white;
+      position: relative;
+      transition: 0.3s ease-in-out;
+    }
+
+    .container:hover {
+      box-shadow: 0 0 25px rgba(255,255,255,0.3), 0 0 40px rgba(0,0,0,0.3);
+      transform: scale(1.02);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 12px 0;
+      border: none;
+      border-radius: 30px;
+      outline: none;
+      font-size: 14px;
+      background: rgba(255,255,255,0.2);
+      color: white;
+    }
+
+    input::placeholder {
+      color: #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      background: linear-gradient(90deg, #00c6ff, #0072ff);
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      border: none;
+      border-radius: 30px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+      transition: background 0.4s, transform 0.2s;
+    }
+
+    button:hover {
+      background: linear-gradient(90deg, #0072ff, #00c6ff);
+      transform: scale(1.03);
+    }
+
+    .alt-option {
+      margin-top: 15px;
+      font-size: 14px;
+      color: #ddd;
+    }
+
+    .alt-option a {
+      color: #fff;
+      text-decoration: underline;
+    }
+
+    #loginContainer {
+      display: none;
+    }
+
+    @media (max-width: 400px) {
+      .container {
+        width: 90%;
+        padding: 25px;
+      }
+    }
+
+    /* Toast styles */
+    #toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+    }
+
+    .toast {
+      background-color: #333;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      opacity: 0.95;
+      font-size: 14px;
+      animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards;
+    }
+
+    .toast.success {
+      background-color: #28a745;
+    }
+
+    .toast.error {
+      background-color: #dc3545;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 0.95; }
+    }
+
+    @keyframes fadeOut {
+      to { opacity: 0; transform: translateX(100%); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container" id="signupContainer">
+    <h2>Sign Up</h2>
+    <input type="email" id="signupEmail" placeholder="Email" />
+    <input type="password" id="signupPassword" placeholder="Password" />
+    <button id="btn1">Sign Up</button>
+    <button id="googleSignup">Sign Up with Google</button>
+    <button onclick="window.location.href='home.html'">Continue as Guest</button>
+    <p class="alt-option">Already have an account? <a href="./index.html" id="goToLogin">Login</a></p>
+  </div>
+
+  <div class="container" id="loginContainer">
+    <h2>Login</h2>
+    <input type="email" id="loginEmail" placeholder="Email" />
+    <input type="password" id="loginPassword" placeholder="Password" />
+    <button id="btn2">Login</button>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toast-container"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+    import {
+      getAuth,
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      GoogleAuthProvider,
+      signInWithPopup
+    } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBn4UeWwq2aS4Og7-W5C7jK_adetN1xgwU",
+      authDomain: "java-script-project-9078e.firebaseapp.com",
+      projectId: "java-script-project-9078e",
+      storageBucket: "java-script-project-9078e.appspot.com",
+      messagingSenderId: "475663638377",
+      appId: "1:475663638377:web:fce5cf163818b847f127f8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    function showToast(message, type = "success") {
+      const toast = document.createElement("div");
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+      document.getElementById("toast-container").appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    document.getElementById("btn1").addEventListener("click", () => {
+      const email = document.getElementById("signupEmail").value;
+      const password = document.getElementById("signupPassword").value;
+      createUserWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          showToast("Signup successful! Please log in.");
+          document.getElementById("signupContainer").style.display = "none";
+          document.getElementById("loginContainer").style.display = "block";
+          document.getElementById("loginEmail").value = email;
+        })
+        .catch(error => {
+          showToast("Signup failed: " + error.message, "error");
+        });
+    });
+
+    document.getElementById("btn2").addEventListener("click", () => {
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          showToast("Login successful!");
+          setTimeout(() => window.location.href = "home.html", 1000);
+        })
+        .catch(error => {
+          showToast("Login failed: " + error.message, "error");
+        });
+    });
+
+    document.getElementById("goToLogin").addEventListener("click", (e) => {
+      e.preventDefault();
+      document.getElementById("signupContainer").style.display = "none";
+      document.getElementById("loginContainer").style.display = "block";
+    });
+
+    document.getElementById("googleSignup").addEventListener("click", () => {
+      signInWithPopup(auth, provider)
+        .then(result => {
+          const user = result.user;
+          showToast(`Welcome ${user.displayName || user.email}`);
+          setTimeout(() => window.location.href = "home.html", 1000);
+        })
+        .catch(error => {
+          showToast("Google login failed: " + error.message, "error");
+        });
+    });
+  </script>
+</body>
+</html>
